@@ -1,16 +1,15 @@
 (function () {
   "use strict";
 
-  // === Anti double-run (kalau script kepasang 2x) ===
-  if (window.__REMOTE_AFF_ADS_LOADED__) return;
-  window.__REMOTE_AFF_ADS_LOADED__ = true;
+  // ====== SETTINGS ======
+  // Pilih setelah paragraf ke berapa untuk iklan tengah
+  var MID_AFTER_PARAGRAPH = 2; // contoh: setelah paragraf ke-2
 
-  // === Settings ===
+  // (Opsional) Batasi tampil hanya di halaman post (bukan homepage/label)
   var ONLY_ON_POST_PAGE = true;
 
-  // MID: sisip setelah blok ke-3 (bukan hanya <p>)
-  var MID_AFTER_BLOCK = 3;
-
+  // Daftar iklan (rotasi random)
+  // Ganti link + image sesuai kebutuhan kamu
   var ADS_DEFAULT = [
     {
       href: "https://www.google.com/",
@@ -24,29 +23,42 @@
     }
   ];
 
+  // (Opsional) Beda iklan per domain blog
+  // Isi hostname blog kamu kalau mau khusus
+  var ADS_BY_HOST = {
+    // "namablog1.blogspot.com": [
+    //   { href: "https://...", img:"https://...", alt:"..." }
+    // ],
+    // "customdomain.com": [
+    //   { href: "https://...", img:"https://...", alt:"..." }
+    // ]
+  };
+
+  // ====== HELPERS ======
   function isPostPage() {
-    return /\/\d{4}\/\d{2}\//.test(location.pathname) || /\.html$/.test(location.pathname);
+    // Blogger biasanya punya /YYYY/MM/..html
+    return /\/\d{4}\/\d{2}\//.test(location.pathname) || /(\.html)$/.test(location.pathname);
   }
 
   function pickRandom(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
-  function createAdEl(ad, label) {
-    var wrap = document.createElement("div");
-    wrap.className = "remote-aff-ad remote-aff-ad-" + label;
-    wrap.style.cssText =
-      "text-align:center;margin:16px 0;padding:12px;border:1px solid #eee;border-radius:12px;";
-
-    wrap.innerHTML =
-      '<a href="' + ad.href + '" target="_blank" rel="nofollow noopener sponsored">' +
-        '<img src="' + ad.img + '" alt="' + (ad.alt || "Ad") + '" style="max-width:100%;height:auto;border-radius:10px;display:inline-block;" />' +
-      "</a>";
-
-    return wrap;
+  function createAdHtml(ad, positionLabel) {
+    // positionLabel hanya untuk debugging kalau perlu
+    return (
+      '<div class="remote-aff-ad remote-aff-ad-' + positionLabel + '" style="' +
+        'text-align:center;margin:16px 0;padding:12px;border:1px solid #eee;border-radius:12px;' +
+      '">' +
+        '<a href="' + ad.href + '" target="_blank" rel="nofollow noopener sponsored">' +
+          '<img src="' + ad.img + '" alt="' + (ad.alt || "Ad") + '" style="max-width:100%;height:auto;border-radius:10px;display:inline-block;" />' +
+        '</a>' +
+      '</div>'
+    );
   }
 
   function findPostBody() {
+    // Banyak template Blogger pakai salah satu ini
     return (
       document.querySelector(".post-body") ||
       document.querySelector(".entry-content") ||
@@ -56,57 +68,34 @@
     );
   }
 
-  function getContentBlocks(postBody) {
-    // Ambil blok-blok yang “nyata” buat titik sisip (p, h1-h6, img, ul/ol, div)
-    var blocks = postBody.querySelectorAll("p, h1, h2, h3, h4, h5, h6, img, ul, ol, div");
-    // Filter yang kosong banget
-    var out = [];
-    for (var i = 0; i < blocks.length; i++) {
-      var el = blocks[i];
-      var text = (el.textContent || "").trim();
-      if (el.tagName === "IMG" || text.length > 30) out.push(el);
+  // ====== MAIN ======
+  try {
+    if (ONLY_ON_POST_PAGE && !isPostPage()) return;
+
+    var postBody = findPostBody();
+    if (!postBody) return;
+
+    var host = location.hostname;
+    var ads = (ADS_BY_HOST[host] && ADS_BY_HOST[host].length) ? ADS_BY_HOST[host] : ADS_DEFAULT;
+    if (!ads || !ads.length) return;
+
+    // TOP
+    var adTop = pickRandom(ads);
+    postBody.insertAdjacentHTML("afterbegin", createAdHtml(adTop, "top"));
+
+    // MID (setelah paragraf tertentu)
+    var paragraphs = postBody.querySelectorAll("p");
+    if (paragraphs && paragraphs.length > MID_AFTER_PARAGRAPH) {
+      var adMid = pickRandom(ads);
+      paragraphs[MID_AFTER_PARAGRAPH - 1].insertAdjacentHTML("afterend", createAdHtml(adMid, "mid"));
     }
-    return out;
-  }
 
-  function alreadyInserted() {
-    return document.querySelectorAll(".remote-aff-ad").length > 0;
-  }
+    // BOTTOM
+    var adBottom = pickRandom(ads);
+    postBody.insertAdjacentHTML("beforeend", createAdHtml(adBottom, "bottom"));
 
-  function run() {
-    try {
-      if (ONLY_ON_POST_PAGE && !isPostPage()) return;
-
-      var postBody = findPostBody();
-      if (!postBody) return;
-
-      // Anti dobel injection (kalau template load ulang, dll)
-      if (alreadyInserted()) return;
-
-      var ads = ADS_DEFAULT;
-      if (!ads || !ads.length) return;
-
-      // TOP
-      postBody.insertAdjacentElement("afterbegin", createAdEl(pickRandom(ads), "top"));
-
-      // MID (pakai blok, bukan cuma <p>)
-      var blocks = getContentBlocks(postBody);
-      if (blocks.length >= MID_AFTER_BLOCK) {
-        blocks[MID_AFTER_BLOCK - 1].insertAdjacentElement("afterend", createAdEl(pickRandom(ads), "mid"));
-      }
-
-      // BOTTOM
-      postBody.insertAdjacentElement("beforeend", createAdEl(pickRandom(ads), "bottom"));
-
-    } catch (e) {
-      // diam
-    }
-  }
-
-  // Jalankan saat DOM siap (Blogger kadang render lambat)
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", run);
-  } else {
-    run();
+  } catch (e) {
+    // kalau ada error, diam saja biar tidak ganggu user
+    // console.log(e);
   }
 })();
