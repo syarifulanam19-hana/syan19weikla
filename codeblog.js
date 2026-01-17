@@ -3,7 +3,7 @@
 
   // ====== SETTINGS ======
   // Pilih setelah paragraf ke berapa untuk iklan tengah
-  var MID_AFTER_PARAGRAPH = 2; // contoh: setelah paragraf ke-2
+  var MID_AFTER_PARAGRAPH = 1; // contoh: setelah paragraf ke-2
 
   // (Opsional) Batasi tampil hanya di halaman post (bukan homepage/label)
   var ONLY_ON_POST_PAGE = true;
@@ -12,13 +12,13 @@
   // Ganti link + image sesuai kebutuhan kamu
   var ADS_DEFAULT = [
     {
-      href: "https://link-affiliate-kamu-1.com",
-      img: "https://link-gambar-kamu.com/banner1.jpg",
+      href: "https://www.google.com/",
+      img: "https://gallery.yopriceville.com/var/resizes/Free-Clipart-Pictures/Ribbons-and-Banners-PNG/Red_Business_Banner_PNG_Clipart.png?m=1629832746",
       alt: "Recommended"
     },
     {
-      href: "https://link-affiliate-kamu-2.com",
-      img: "https://link-gambar-kamu.com/banner2.jpg",
+      href: "https://www.google.com/m",
+      img: "https://gallery.yopriceville.com/var/resizes/Free-Clipart-Pictures/Ribbons-and-Banners-PNG/Red_Business_Banner_PNG_Clipart.png?m=1629832746",
       alt: "Learn faster"
     }
   ];
@@ -99,3 +99,4 @@
     // console.log(e);
   }
 })();
+
