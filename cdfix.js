@@ -28,8 +28,8 @@
       // fallback kalau gagal load
       fallback: {
         type: "banner",
-        href: "https://e0de87v8q74iyq1-knjhmm7xcz.hop.clickbank.net",
-        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ9UaT75NqKgUJg5Ad0Zd1JMtC2JjqC0IZow&s",
+        href: "https://408cdbv6t02h1i8kqjl8tv1y5x.hop.clickbank.net",
+        img: "https://zcodesystem.com/images/nuts/728z90-1.gif",
         alt: "Fallback Top"
       }
     },
@@ -42,8 +42,8 @@
       // fallback kalau gagal load
       fallback: {
         type: "banner",
-        href: "https://e0de87v8q74iyq1-knjhmm7xcz.hop.clickbank.net",
-        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ9UaT75NqKgUJg5Ad0Zd1JMtC2JjqC0IZow&s",
+        href: "https://408cdbv6t02h1i8kqjl8tv1y5x.hop.clickbank.net",
+        img: "https://zcodesystem.com/images/nuts/300z250-1.gif",
         alt: "Fallback Mid"
       }
     },
@@ -55,8 +55,8 @@
       containerId: "container-a48c72bcd2d5372cabfdefdc7b4c2650",
       fallback: {
         type: "banner",
-        href: "https://e0de87v8q74iyq1-knjhmm7xcz.hop.clickbank.net",
-        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ9UaT75NqKgUJg5Ad0Zd1JMtC2JjqC0IZow&s",
+        href: "https://408cdbv6t02h1i8kqjl8tv1y5x.hop.clickbank.net",
+        img: "https://zcodesystem.com/images/nuts/250z250-1.gif",
         alt: "Fallback Bottom"
       }
     }
