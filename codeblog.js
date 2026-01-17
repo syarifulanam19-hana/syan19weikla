@@ -3,7 +3,7 @@
 
   // ====== SETTINGS ======
   // Pilih setelah paragraf ke berapa untuk iklan tengah
-  var MID_AFTER_PARAGRAPH = 1; // contoh: setelah paragraf ke-2
+  var MID_AFTER_PARAGRAPH = 2; // contoh: setelah paragraf ke-2
 
   // (Opsional) Batasi tampil hanya di halaman post (bukan homepage/label)
   var ONLY_ON_POST_PAGE = true;
@@ -99,4 +99,5 @@
     // console.log(e);
   }
 })();
+
 
