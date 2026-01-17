@@ -54,9 +54,9 @@
       scriptSrc: "https://corruptioneasiestsubmarine.com/a4/8c/72/a48c72bcd2d5372cabfdefdc7b4c2650.js",
       containerId: "container-a48c72bcd2d5372cabfdefdc7b4c2650",
       fallback: {
-      type: "adsterra_invoke",
-      scriptSrc: "https://corruptioneasiestsubmarine.com/204f53d3bc77e4e62a73b051eadb8aa3/invoke.js",
-      containerId: "container-204f53d3bc77e4e62a73b051eadb8aa3",
+        type: "banner",
+        href: "https://e0de87v8q74iyq1-knjhmm7xcz.hop.clickbank.net",
+        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZ9UaT75NqKgUJg5Ad0Zd1JMtC2JjqC0IZow&s",
         alt: "Fallback Bottom"
       }
     }
