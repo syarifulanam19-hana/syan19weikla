@@ -8,42 +8,65 @@
   var ONLY_ON_POST_PAGE = true;
   var MID_AFTER_BLOCK = 4; // turunkan ke 2/3 kalau artikel pendek
 
+  // ===== Fallback settings =====
+  // Berapa lama menunggu Adsterra render sebelum fallback aktif (ms)
+  var ADSTERRA_FALLBACK_TIMEOUT = 3500;
+
   // ===== ADS CONFIG =====
   var ADS = {
-
     // ===== TOP : Adsterra iframe 468x60 =====
     adsterra_top: {
       type: "adsterra_iframe",
       options: {
-        key: "68ff788002d0ee493e40896f8d81d78b",
+        key: "dceab9dd5dfacc14c25c05e16ebb52b6",
         format: "iframe",
-        height: 60,
-        width: 468,
+        height: 250,
+        width: 300,
         params: {}
       },
-      scriptSrc: "https://corruptioneasiestsubmarine.com/68ff788002d0ee493e40896f8d81d78b/invoke.js"
+      scriptSrc: "https://corruptioneasiestsubmarine.com/dceab9dd5dfacc14c25c05e16ebb52b6/invoke.js",
+      // fallback kalau gagal load
+      fallback: {
+        type: "banner",
+        href: "https://408cdbv6t02h1i8kqjl8tv1y5x.hop.clickbank.net",
+        img: "https://zcodesystem.com/images/nuts/728z90-1.gif",
+        alt: "Fallback Top"
+      }
     },
 
     // ===== MID : Adsterra invoke + container =====
     adsterra_mid: {
       type: "adsterra_invoke",
       scriptSrc: "https://corruptioneasiestsubmarine.com/204f53d3bc77e4e62a73b051eadb8aa3/invoke.js",
-      containerId: "container-204f53d3bc77e4e62a73b051eadb8aa3"
+      containerId: "container-204f53d3bc77e4e62a73b051eadb8aa3",
+      // fallback kalau gagal load
+      fallback: {
+        type: "banner",
+        href: "https://408cdbv6t02h1i8kqjl8tv1y5x.hop.clickbank.net",
+        img: "https://zcodesystem.com/images/nuts/300z250-1.gif",
+        alt: "Fallback Mid"
+      }
     },
 
-    // ===== BOTTOM : Banner biasa =====
-    banner_bottom: {
-      type: "banner",
-      href: "https://www.google.com/",
-      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSt_pMl0xmpprd-lpycGIcf8QS1qW3q56nWzQ&s",
-      alt: "Bottom Banner"
+// ===== BOTTOM : Update Baru (Script Invoke) =====
+    adsterra_bottom: {
+      type: "adsterra_invoke",
+      scriptSrc: "https://corruptioneasiestsubmarine.com/a4/8c/72/a48c72bcd2d5372cabfdefdc7b4c2650.js",
+      containerId: "container-a48c72bcd2d5372cabfdefdc7b4c2650",
+      fallback: {
+        type: "banner",
+        href: "https://408cdbv6t02h1i8kqjl8tv1y5x.hop.clickbank.net",
+        img: "https://zcodesystem.com/images/nuts/250z250-1.gif",
+        alt: "Fallback Bottom"
+      }
     }
   };
 
+  // Pilih iklan per posisi
   var PLACEMENT = {
     top: "adsterra_top",
     mid: "adsterra_mid",
-    bottom: "banner_bottom"
+    bottom: "adsterra_bottom"
   };
 
   function isPostPage() {
@@ -54,7 +77,9 @@
     return (
       document.querySelector('[itemprop="articleBody"]') ||
       document.querySelector(".post-body") ||
+      document.querySelector(".postBody") ||
       document.querySelector(".entry-content") ||
+      document.querySelector(".post-content") ||
       document.querySelector("article") ||
       null
     );
@@ -80,40 +105,76 @@
   function baseWrap(label) {
     var wrap = document.createElement("div");
     wrap.className = "remote-aff-ad remote-aff-ad-" + label;
+    // clear:both mencegah “naik” karena float
     wrap.style.cssText =
       "display:block;clear:both;position:relative;" +
       "margin:16px 0;text-align:center;";
     return wrap;
   }
 
-  // ===== CREATE ADS =====
+  // ===== Fallback helpers =====
+  function createBannerInnerHTML(ad) {
+    return (
+      '<a href="' + ad.href + '" target="_blank" rel="nofollow noopener sponsored">' +
+        '<img src="' + ad.img + '" alt="' + (ad.alt || "Ad") + '" ' +
+        'style="max-width:100%;height:auto;border-radius:10px;display:inline-block;" />' +
+      "</a>"
+    );
+  }
 
+  function applyFallback(wrap, fallbackAd) {
+    if (!wrap || !fallbackAd) return;
+    // jangan overwrite kalau sudah ada iframe / sudah render
+    var hasIframe = wrap.querySelector("iframe");
+    if (hasIframe) return;
+
+    wrap.innerHTML = createBannerInnerHTML(fallbackAd);
+  }
+
+  // ===== Ad creators =====
   function createBannerEl(ad, label) {
     var wrap = baseWrap(label);
-    wrap.innerHTML =
-      '<a href="' + ad.href + '" target="_blank" rel="nofollow noopener sponsored">' +
-      '<img src="' + ad.img + '" alt="' + (ad.alt || "Ad") + '" style="max-width:100%;height:auto;border-radius:10px;" />' +
-      "</a>";
+    wrap.innerHTML = createBannerInnerHTML(ad);
     return wrap;
   }
 
+  // Adsterra iframe invoke:
+  // - set window.atOptions tepat sebelum script dimasukkan
+  // - load berurutan supaya atOptions tidak tabrakan
+  // - fallback jika iframe tidak muncul dalam timeout
   function createAdsterraIframeEl(ad, label) {
     var wrap = baseWrap(label);
 
-    // atOptions harus global
+    // atOptions harus global & dibaca invoke.js saat eksekusi
     window.atOptions = ad.options;
 
     var s = document.createElement("script");
-    s.async = true;
+    // Penting: jangan async agar urutan eksekusi lebih stabil
+    s.async = false;
     s.src = ad.scriptSrc;
 
+    // Jika script gagal load (network/adblock), fallback
+    s.onerror = function () {
+      applyFallback(wrap, ad.fallback);
+    };
+
     wrap.appendChild(s);
+
+    // Timeout check: kalau tidak ada iframe setelah X ms -> fallback
+    setTimeout(function () {
+      var hasIframe = wrap.querySelector("iframe");
+      if (!hasIframe) {
+        applyFallback(wrap, ad.fallback);
+      }
+    }, ADSTERRA_FALLBACK_TIMEOUT);
+
     return wrap;
   }
 
   function createAdsterraInvokeEl(ad, label) {
     var wrap = baseWrap(label);
 
+    // pastikan container unik
     if (document.getElementById(ad.containerId)) return null;
 
     var container = document.createElement("div");
@@ -125,15 +186,32 @@
     s.setAttribute("data-cfasync", "false");
     s.src = ad.scriptSrc;
 
+    s.onerror = function () {
+      applyFallback(wrap, ad.fallback);
+    };
+
     wrap.appendChild(s);
+
+    // Timeout check: kalau container tetap kosong -> fallback
+    setTimeout(function () {
+      // kalau Adsterra render biasanya mengisi container/menambah iframe
+      var hasIframe = wrap.querySelector("iframe");
+      var hasContent = (container.innerHTML || "").trim().length > 0;
+      if (!hasIframe && !hasContent) {
+        applyFallback(wrap, ad.fallback);
+      }
+    }, ADSTERRA_FALLBACK_TIMEOUT);
+
     return wrap;
   }
 
   function createAdEl(ad, label) {
     if (!ad) return null;
+
     if (ad.type === "banner") return createBannerEl(ad, label);
     if (ad.type === "adsterra_iframe") return createAdsterraIframeEl(ad, label);
     if (ad.type === "adsterra_invoke") return createAdsterraInvokeEl(ad, label);
+
     return null;
   }
 
@@ -141,7 +219,8 @@
     if (el) where.insertAdjacentElement(pos, el);
   }
 
-  function run() {
+  // Load berurutan (supaya atOptions top & bottom tidak tabrakan)
+  function runSequential() {
     if (ONLY_ON_POST_PAGE && !isPostPage()) return;
 
     var postBody = findPostBody();
@@ -149,25 +228,46 @@
     if (alreadyInserted()) return;
 
     // TOP
-    insertEl(postBody, "afterbegin", createAdEl(ADS[PLACEMENT.top], "top"));
+    var topAd = ADS[PLACEMENT.top];
+    var topEl = createAdEl(topAd, "top");
+    insertEl(postBody, "afterbegin", topEl);
 
     // MID
     var blocks = getContentBlocks(postBody);
-    if (blocks.length >= MID_AFTER_BLOCK) {
-      insertEl(
-        blocks[MID_AFTER_BLOCK - 1],
-        "afterend",
-        createAdEl(ADS[PLACEMENT.mid], "mid")
-      );
+    var midAd = ADS[PLACEMENT.mid];
+    if (midAd && blocks.length >= MID_AFTER_BLOCK) {
+      var midEl = createAdEl(midAd, "mid");
+      insertEl(blocks[MID_AFTER_BLOCK - 1], "afterend", midEl);
     }
 
-    // BOTTOM
-    insertEl(postBody, "beforeend", createAdEl(ADS[PLACEMENT.bottom], "bottom"));
+    // BOTTOM — kasih delay kecil agar top iframe invoke selesai baca atOptions dulu
+    setTimeout(function () {
+      var bottomAd = ADS[PLACEMENT.bottom];
+      var bottomEl = createAdEl(bottomAd, "bottom");
+      insertEl(postBody, "beforeend", bottomEl);
+    }, 250);
+  }
+
+  // Blogger kadang render telat
+  function runWithRetry(maxTry, delayMs) {
+    var tries = 0;
+    function attempt() {
+      tries++;
+      var postBody = findPostBody();
+      if (!postBody) {
+        if (tries < maxTry) return setTimeout(attempt, delayMs);
+        return;
+      }
+      runSequential();
+    }
+    attempt();
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", run);
+    document.addEventListener("DOMContentLoaded", function () {
+      runWithRetry(10, 400);
+    });
   } else {
-    run();
+    runWithRetry(10, 400);
   }
 })();
