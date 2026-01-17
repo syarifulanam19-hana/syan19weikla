@@ -12,9 +12,8 @@
   // Ganti link + image sesuai kebutuhan kamu
   var ADS_DEFAULT = [
     {
-      href: "https://www.google.com/",
-      img: "https://gallery.yopriceville.com/var/resizes/Free-Clipart-Pictures/Ribbons-and-Banners-PNG/Red_Business_Banner_PNG_Clipart.png?m=1629832746",
-      alt: "Recommended"
+<script async="async" data-cfasync="false" src="https://corruptioneasiestsubmarine.com/3125a33b04387fdcde3ae56138391d25/invoke.js"></script>
+<div id="container-3125a33b04387fdcde3ae56138391d25"></div>
     },
     {
       href: "https://www.google.com/m",
@@ -99,5 +98,6 @@
     // console.log(e);
   }
 })();
+
 
 
